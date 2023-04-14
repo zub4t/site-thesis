@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Index Page</title>
+
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css"
+    />
+
+    <style>
+      body,
+      html {
+        height: 100%;
+      }
+      #myCanvas {
+        position:  relative;
+        top: 0px;
+        left: 0px;
+      }
+      .side-menu {
+        position: relative;
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">My Website</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <span class="nav-link" onclick="toggleCanvas(0)">Home</span>
+          </li>
+          <li class="nav-item">
+            <span class="nav-link" onclick="toggleCanvas(1)">3D Viwer</span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container index">
+      <div class="row mt-4">
+        <div class="col-md-4 offset-md-3">
+          <form>
+            <div class="form-group">
+              <label for="jsonFile">Upload JSON file</label>
+              <input
+                type="file"
+                class="form-control-file"
+                id="jsonFile"
+                accept=".json"
+                required
+              />
+            </div>
+          </form>
+        </div>
+        <div class="col-md-4">
+          <button type="button" class="btn btn-primary" onclick="createChart()">
+            Create Chart
+          </button>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+          <select class="form-control" id="IDs" multiple>
+            <option value="all">Select All</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+          <select class="form-control" id="EXPs" multiple>
+            <option value="all">Select All</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <canvas id="comparisonChart" class="index"></canvas>
+
+    <select class="form-control side-menu viwer" id="EXP_VIEW">
+    </select>
+
+    <canvas id="myCanvas" class="viwer"></canvas>
+  
+    <!-- Include jQuery and Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+    <script src="./main.js"></script>
+    <script src="./util.js"></script>
+    <script src="./bundle.js"></script>
+    <script src="./gradient-descent.js"></script>
+  </body>
+</html>
