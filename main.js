@@ -64,47 +64,80 @@ function onDocumentLoad() {
   )
 }
 
-$(function () {
-  // Function to create options for select element
-  function createOptions(select, options) {
-    select.html('<option>Select ' + select.attr('id') + '(s)</option>')
-    for (var i = 0; i < options.length; i++) {
-      select.append(
-        '<option value="' + options[i] + '">' + options[i] + '</option>'
-      )
-    }
+function createOptions(select, options) {
+  select.html('<option value="all">Select All</option>')
+  for (var i = 0; i < options.length; i++) {
+    select.append(
+      '<option value="' + options[i] + '">' + options[i] + '</option>'
+    )
   }
+}
 
-  // Function to handle file upload
-  $('#jsonFile').change(function () {
-    var file = this.files[0]
-    var reader = new FileReader()
-    reader.onload = function (e) {
-      var data = JSON.parse(e.target.result)
-      createOptions($('#IDs'), data.listIDsAndBSSIDS)
-      createOptions($('#EXPs'), data.listExp)
-      createOptions($('#EXP_VIEW'),data.listExp)
-      onDocumentLoad()
-      comparisonData = data.comparisonData
-      iArr = data.listIDsAndBSSIDS
-      eArr = data.listExp
-      mobileLocation = data.mobileLocationMap
-      localStorage.setItem('comparisonData', comparisonData)
-      localStorage.setItem('iArr', iArr)
-      localStorage.setItem('eArr', eArr)
-      localStorage.setItem('mobileLocation', mobileLocation)
-    }
-    reader.readAsText(file)
-  })
+function fetchJSON(url) {
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      return response.json()
+    })
+    .then((jsonData) => {
+      //  console.log(jsonData); // do something with the retrieved JSON data
+      parse(jsonData)
+    })
+    .catch((error) => {
+      console.error('There was a problem fetching the JSON data:', error)
+    })
+}
+// Function to handle file upload
+$('#jsonFile').change(function () {
+  var file = this.files[0]
+  var reader = new FileReader()
+  reader.onload = function (e) {
+    var data = JSON.parse(e.target.result)
+    createOptions($('#IDs'), data.listIDsAndBSSIDS)
+    createOptions($('#EXPs'), data.listExp)
+    createOptions($('#EXP_VIEW'), data.listExp)
+    onDocumentLoad()
+    comparisonData = data.comparisonData
+    iArr = data.listIDsAndBSSIDS
+    eArr = data.listExp
+    mobileLocation = data.mobileLocationMap
+    localStorage.setItem('comparisonData', comparisonData)
+    localStorage.setItem('iArr', iArr)
+    localStorage.setItem('eArr', eArr)
+    localStorage.setItem('mobileLocation', mobileLocation)
+  }
+  reader.readAsText(file)
+})
+function parse(data) {
+  createOptions($('#IDs'), data.listIDsAndBSSIDS)
+  createOptions($('#EXPs'), data.listExp)
+  createOptions($('#EXP_VIEW'), data.listExp)
+  onDocumentLoad()
+  comparisonData = data.comparisonData
+  iArr = data.listIDsAndBSSIDS
+  eArr = data.listExp
+  mobileLocation = data.mobileLocationMap
+  localStorage.setItem('comparisonData', comparisonData)
+  localStorage.setItem('iArr', iArr)
+  localStorage.setItem('eArr', eArr)
+  localStorage.setItem('mobileLocation', mobileLocation)
+}
+$('#EXP_VIEW').change(function () {
+  let exp = document.querySelector('#EXP_VIEW').value
+  let pos = teste(exp)
+  Draw(pos, mobileLocation[exp], 0, 0x0000ff)
 })
 
-$('#EXP_VIEW').change(function () {
-  let exp=document.querySelector('#EXP_VIEW').value
-  let pos = teste(exp)
-  Draw(pos, mobileLocation[exp])
-
-
-
+$('#TECHNOLOGY').change(function () {
+  if (document.querySelector('#TECHNOLOGY').value == 'UWB') {
+    bias = (measurement) => measurement
+    technology = (id) => id <= 4
+  } else {
+    technology = (id) => id > 4
+    bias = measurement => measurement / 1.16 - 0.63
+  }
 })
 function createChart() {
   if (myChart) {
@@ -229,25 +262,25 @@ function createChart() {
   })
 }
 
-function Draw(pos, true_pos) {
-  var objectToRemove = scene.getObjectByName('smartphone')
+function Draw(pos, true_pos, id, color) {
+  var objectToRemove = scene.getObjectByName(`smartphone_${id}`)
   if (objectToRemove !== undefined) {
     scene.remove(objectToRemove)
   }
 
-  objectToRemove = scene.getObjectByName('guess')
+  objectToRemove = scene.getObjectByName(`guess_${id}`)
   if (objectToRemove !== undefined) {
     scene.remove(objectToRemove)
   }
   const coneGeometry = new THREE.ConeGeometry(1, 2, 32)
   // Create a blue material for the cone
-  const coneMaterialBlue = new THREE.MeshBasicMaterial({ color: 0x0000ff })
+  const coneMaterialBlue = new THREE.MeshBasicMaterial({ color: color })
   // Create a mesh from the geometry and material, and position it
   const guess = new THREE.Mesh(coneGeometry, coneMaterialBlue)
   guess.position.set(pos.x * 20, 0, pos.y * 20)
 
   // Add the cone mesh to the scene and give it an ID for later reference
-  guess.name = 'guess'
+  guess.name = `guess_${id}`
 
   // Create a blue material for the cone
   const coneMaterialGreen = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
@@ -256,23 +289,150 @@ function Draw(pos, true_pos) {
   smartphone.position.set(true_pos[0] * 20, true_pos[2] * 20, true_pos[1] * 20)
 
   // Add the cone mesh to the scene and give it an ID for later reference
-  smartphone.name = 'smartphone'
+  smartphone.name = `smartphone_${id}`
 
   scene.add(guess)
   scene.add(smartphone)
 }
 $(document).ready(function () {
   console.log('Page has finished loading')
+  fetchJSON('./file.json')
   toggleCanvas(0)
 })
-function toggleCanvas(i){
-  if(i==0){
-    document.querySelectorAll('.index').forEach(item=>item.style.display = 'block')
-    document.querySelectorAll('.viwer').forEach(item=>item.style.display = 'none')
-  }else{
+function toggleCanvas(i) {
+  if (i == 0) {
+    document
+      .querySelectorAll('.index')
+      .forEach((item) => (item.style.display = 'block'))
+    document
+      .querySelectorAll('.viwer')
+      .forEach((item) => (item.style.display = 'none'))
+  } else {
+    document
+      .querySelectorAll('.viwer')
+      .forEach((item) => (item.style.display = 'flex'))
 
-    document.querySelectorAll('.viwer').forEach(item=>item.style.display = 'block')
-
-    document.querySelectorAll('.index').forEach(item=>item.style.display = 'none')
+    document
+      .querySelectorAll('.index')
+      .forEach((item) => (item.style.display = 'none'))
   }
+}
+
+//comparisonData.filter(x => x.exp=="EXP_52").forEach(x => {if(!f.includes(x.id))f.push(x.id)})
+function groupByIdAndTimestampWithMargin(objects) {
+  // Group objects by timestamp (considering 0.5 seconds after and 0.4 seconds before)
+  const timestampMap = new Map()
+  objects.forEach((obj) => {
+    let found = false
+    const objDate = new Date(obj.timestamp)
+    timestampMap.forEach((value, key) => {
+      const keyDate = new Date(key)
+      if (
+        Math.abs(objDate.getTime() - keyDate.getTime()) < 300
+        //&&
+        //        objDate.getSeconds() === keyDate.getSeconds()
+      ) {
+        value.push(obj)
+        found = true
+      }
+    })
+
+    if (!found) {
+      timestampMap.set(obj.timestamp, [obj])
+    }
+  })
+
+  // Create a map with distinct ids and their average measurements
+  const resultMap = new Map()
+  timestampMap.forEach((group, timestamp) => {
+    const idMap = new Map()
+    group.forEach((obj) => {
+      if (!idMap.has(obj.id)) {
+        idMap.set(obj.id, { sum: 0, count: 0 })
+      }
+      const currentValue = idMap.get(obj.id)
+      currentValue.sum += obj.measurement
+      currentValue.count++
+      currentValue.position = obj.pos
+      idMap.set(obj.id, currentValue)
+    })
+
+    const averagedIdMap = new Map()
+    idMap.forEach((value, id) => {
+      averagedIdMap.set(id, {
+        position: value.position,
+        measurement: value.sum / value.count,
+      })
+    })
+
+    resultMap.set(timestamp, averagedIdMap)
+  })
+
+  return resultMap
+}
+
+function removeAllObjects() {
+  scene.children.forEach((item) => {
+    if (item.name.includes('smartphone') || item.name.includes('guess')) {
+      scene.remove(item)
+    }
+  })
+}
+
+function teste2(groupSize) {
+  let objectToRemove = scene.getObjectByName('guideLine')
+  if (objectToRemove !== undefined) {
+    scene.remove(objectToRemove)
+  }
+
+  const material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
+  const points = []
+  points.push(new THREE.Vector3(1, 0, 1.66))
+  points.push(new THREE.Vector3(8, 0, 1.66))
+  points.push(new THREE.Vector3(8, 0, 3.66))
+  points.push(new THREE.Vector3(1, 0, 3.66))
+  points.push(new THREE.Vector3(1, 0, 1.66))
+  points.forEach((p) => {
+    p.multiplyScalar(20)
+  })
+  const geometry = new THREE.BufferGeometry().setFromPoints(points)
+  const line = new THREE.Line(geometry, material)
+  line.name = 'guideLine'
+  scene.add(line)
+  var t = comparisonData.filter((item) => {
+    return item.exp == 'EXP_52' && technology(item.id.length)
+  })
+  let s = groupByIdAndTimestampWithMargin(t)
+  let keyArr = Array.from(s.keys())
+  let c = 0
+  let arrColors = []
+  let idInterval = setInterval(() => {
+    if (keyArr[c] == undefined) {
+      clearInterval(idInterval)
+      removeAllObjects()
+      return
+    }
+    let arr = Array.from(s.get(keyArr[c]).values())
+    let cc = combinations(arr, groupSize)
+    if (arrColors.length == 0) {
+      arrColors = new Array(cc.length).fill(-1)
+    }
+    let d = 0
+    cc.forEach((item) => {
+      if (arrColors[d] == -1) {
+        arrColors[d] = randomColor()
+      }
+      item.forEach((x) => (x.measurement = bias(x.measurement)))
+      let pos = gradientDescent(
+        item,
+        initialGuess,
+        learningRate,
+        numIterations,
+        tolerance
+      )
+      Draw(pos, [0, 0, 0], d, arrColors[d])
+      d++
+    })
+    c++
+  }, 200)
 }

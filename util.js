@@ -11,3 +11,29 @@ function costFunction(measurements, target) {
   });
   return cost;
 }
+
+
+function combinations(arr, groupSize) {
+  if (groupSize === 0) {
+    return [[]];
+  }
+  
+  if (arr.length < groupSize) {
+    return [];
+  }
+  
+  const result = [];
+  for (let i = 0; i <= arr.length - groupSize; i++) {
+    const remainingCombinations = combinations(arr.slice(i + 1), groupSize - 1);
+    for (const combination of remainingCombinations) {
+      result.push([arr[i], ...combination]);
+    }
+  }
+
+  return result;
+}
+
+function randomColor() {
+  const colorValue = Math.floor(Math.random() * 0xffffff);
+  return colorValue;
+}

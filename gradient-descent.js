@@ -3,14 +3,16 @@ const initialGuess = { x: 0, y: 0, z: 0 };
 const learningRate = 0.01;
 const numIterations = 1000;
 const tolerance = 1e-9;
+var technology = (id) => id>4;
+var bias = (measurement) => (measurement/1.16) - 0.63
 function teste(EXP_T){
   
   const test_data = []
   
   iArr.forEach( id =>{
-    if(id.length>4){
+    if(technology(id.length)){
       const arr = comparisonData.filter(item=>item.id==id && item.exp == EXP_T)  
-      const sum = arr.reduce((accumulator, currentValue) => accumulator + currentValue.measurement, 0);
+      const sum = arr.reduce((accumulator, currentValue) => accumulator + bias(currentValue.measurement), 0);
       const average = sum/arr.length
       test_data.push({position:arr[0].pos,measurement:average})
     }
@@ -54,3 +56,4 @@ function gradientDescent(measurements, initialGuess, learningRate, maxIterations
 
   return target;
 }
+
