@@ -328,7 +328,7 @@ function groupByIdAndTimestampWithMargin(objects) {
     timestampMap.forEach((value, key) => {
       const keyDate = new Date(key)
       if (
-        Math.abs(objDate.getTime() - keyDate.getTime()) < 300
+        Math.abs(objDate.getTime() - keyDate.getTime()) < 1000
         //&&
         //        objDate.getSeconds() === keyDate.getSeconds()
       ) {
@@ -379,7 +379,7 @@ function removeAllObjects() {
   })
 }
 
-function teste2(groupSize) {
+function teste2(groupSize,EXP_T) {
   let objectToRemove = scene.getObjectByName('guideLine')
   if (objectToRemove !== undefined) {
     scene.remove(objectToRemove)
@@ -400,7 +400,7 @@ function teste2(groupSize) {
   line.name = 'guideLine'
   scene.add(line)
   var t = comparisonData.filter((item) => {
-    return item.exp == 'EXP_52' && technology(item.id.length)
+    return item.exp == EXP_T && technology(item.id.length)
   })
   let s = groupByIdAndTimestampWithMargin(t)
   let keyArr = Array.from(s.keys())
